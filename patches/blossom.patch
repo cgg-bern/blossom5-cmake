@@ -1,0 +1,372 @@
+diff --color -Nau blossom5-v2.05.src/block.h blossom5/block.h
+--- blossom5-v2.05.src/block.h	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/block.h	2022-08-31 17:01:57.311591169 +0200
+@@ -92,6 +92,8 @@
+ 
+ #include <stdlib.h>
+ 
++namespace BlossomV {
++
+ /***********************************************************************/
+ /***********************************************************************/
+ /***********************************************************************/
+@@ -263,6 +265,7 @@
+ 	void	(*error_function)(const char *);
+ };
+ 
++} // namespace BlossomV
+ 
+ #endif
+ 
+diff --color -Nau blossom5-v2.05.src/example.cpp blossom5/example.cpp
+--- blossom5-v2.05.src/example.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/example.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -2,6 +2,8 @@
+ #include "PerfectMatching.h"
+ #include "GEOM/GeomPerfectMatching.h"
+ 
++using namespace BlossomV;
++
+ void LoadFile(int& node_num, int& edge_num, int*& edges, int*& weights, char* filename)
+ {
+ 	int e = 0;
+Common subdirectories: blossom5-v2.05.src/GEOM and blossom5/GEOM
+diff --color -Nau blossom5-v2.05.src/LCA.h blossom5/LCA.h
+--- blossom5-v2.05.src/LCA.h	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/LCA.h	2022-08-31 17:01:57.311591169 +0200
+@@ -47,6 +47,8 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
++namespace BlossomV {
++
+ //#define LCA_BLOCKS
+ 
+ class LCATree
+@@ -294,4 +296,6 @@
+ 	else           { _j = i; _i = j; }
+ }
+ 
++} // namespace BlossomV
++
+ #endif
+Common subdirectories: blossom5-v2.05.src/MinCost and blossom5/MinCost
+diff --color -Nau blossom5-v2.05.src/misc.cpp blossom5/misc.cpp
+--- blossom5-v2.05.src/misc.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/misc.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -2,6 +2,8 @@
+ #include "PerfectMatching.h"
+ #include "LCA.h"
+ 
++namespace BlossomV {
++
+ struct Node
+ {
+ 	PerfectMatching::REAL sum; // = twice_y[i] + twice_y[i->parent] + twice_y[i->parent->parent] + ...
+@@ -13,7 +15,7 @@
+ };
+ 
+ 
+-int CheckPerfectMatchingOptimality(int node_num, int edge_num, int* edges, int* weights, PerfectMatching* pm, PerfectMatching::REAL threshold)
++int CheckPerfectMatchingOptimality(int node_num, int edge_num, int* edges, PerfectMatching::REAL* weights, PerfectMatching* pm, PerfectMatching::REAL threshold)
+ {
+ 	int _i, _j, _e;
+ 	Node* i;
+@@ -138,7 +140,7 @@
+ 	return 0;
+ }
+ 
+-double ComputePerfectMatchingCost(int node_num, int edge_num, int* edges, int* weights, PerfectMatching* pm)
++double ComputePerfectMatchingCost(int node_num, int edge_num, int* edges, PerfectMatching::REAL* weights, PerfectMatching* pm)
+ {
+ 	int i;
+ 	int j;
+@@ -170,3 +172,5 @@
+ 	return cost;
+ }
+ 
++} // namespace BlossomV
++
+diff --color -Nau blossom5-v2.05.src/PerfectMatching.h blossom5/PerfectMatching.h
+--- blossom5-v2.05.src/PerfectMatching.h	2014-12-15 15:35:59.000000000 +0100
++++ blossom5/PerfectMatching.h	2022-08-31 17:01:57.311591169 +0200
+@@ -31,6 +31,7 @@
+ #ifndef HALSKDJDFHALSJASFDFASJGLA
+ #define HALSKDJDFHALSJASFDFASJGLA
+ 
++#include <limits>
+ #include <assert.h>
+ #include <limits.h>
+ #include "block.h"
+@@ -46,6 +47,7 @@
+ //
+ // Using single precision floating point numbers (float) is really not recommended.
+ 
++namespace BlossomV {
+ 
+ class PerfectMatching
+ {
+@@ -55,8 +57,9 @@
+ 	typedef double REAL; 
+ 	#define PM_INFTY ((REAL)1e100)
+ #else
+-	typedef int REAL;
+-	#define PM_INFTY (INT_MAX/2)
++
++       typedef int64_t REAL;
++       #define PM_INFTY (std::numeric_limits<REAL>::max()/2)
+ #endif
+ 
+ 	typedef int NodeId;
+@@ -238,9 +241,11 @@
+ // returns 0 if success.
+ // returns 1 if complementary slackness conditions are violated (then the amount of violation is printed - could potentially happen for double's)
+ // returns 2 if the blossom tree structure is incorrect (or inconsistent with primal solution)
+-int CheckPerfectMatchingOptimality(int node_num, int edge_num, int* edges, int* weights, PerfectMatching* pm, PerfectMatching::REAL threshold=(PerfectMatching::REAL)(1e-10));
++int CheckPerfectMatchingOptimality(int node_num, int edge_num, int* edges, PerfectMatching::REAL* weights, PerfectMatching* pm, PerfectMatching::REAL threshold=(PerfectMatching::REAL)(1e-10));
++
+ 
++double ComputePerfectMatchingCost(int node_num, int edge_num, int* edges, PerfectMatching::REAL* weights, PerfectMatching* pm);
+ 
+-double ComputePerfectMatchingCost(int node_num, int edge_num, int* edges, int* weights, PerfectMatching* pm);
++} // namespace BlossomV
+ 
+ #endif
+diff --color -Nau blossom5-v2.05.src/PMduals.cpp blossom5/PMduals.cpp
+--- blossom5-v2.05.src/PMduals.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/PMduals.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -4,6 +4,7 @@
+ #include "PMimplementation.h"
+ #include "MinCost/MinCost.h"
+ 
++namespace BlossomV {
+ 
+ void PerfectMatching::ComputeEpsGlobal()
+ {
+@@ -439,3 +440,6 @@
+ 
+ 	return (delta > PM_THRESHOLD);
+ }
++
++} // namespace BlossomV
++
+diff --color -Nau blossom5-v2.05.src/PMexpand.cpp blossom5/PMexpand.cpp
+--- blossom5-v2.05.src/PMexpand.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/PMexpand.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -4,7 +4,7 @@
+ #include "PMimplementation.h"
+ 
+ 
+-
++namespace BlossomV {
+ 
+ inline void PerfectMatching::ProcessSelfloop(Node* b, Edge* a)
+ {
+@@ -302,3 +302,5 @@
+ 	assert(removed_num == 0);
+ }
+ 
++} // namespace BlossomV
++
+diff --color -Nau blossom5-v2.05.src/PMimplementation.h blossom5/PMimplementation.h
+--- blossom5-v2.05.src/PMimplementation.h	2013-05-05 07:18:50.000000000 +0200
++++ blossom5/PMimplementation.h	2022-08-31 17:01:57.311591169 +0200
+@@ -32,6 +32,8 @@
+ #include "PQ.h"
+ #include "LCA.h"
+ 
++namespace BlossomV {
++
+ 
+ #define LCA_REPAIRS
+ 
+@@ -351,6 +353,7 @@
+ 		}\
+ 	}
+ 
++} // namespace BlossomV
+ 
+ #endif
+ 
+diff --color -Nau blossom5-v2.05.src/PMinit.cpp blossom5/PMinit.cpp
+--- blossom5-v2.05.src/PMinit.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/PMinit.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -3,6 +3,7 @@
+ #include <string.h>
+ #include "PMimplementation.h"
+ 
++namespace BlossomV {
+ 
+ void PerfectMatching::InitGreedy(bool allocate_trees)
+ {
+@@ -542,3 +543,6 @@
+ 	if (t == trees) nodes[node_num].tree_sibling_next = NULL;
+ 	else            (t-1)->root->tree_sibling_next = NULL;
+ }
++
++} // namespace BlossomV
++
+diff --color -Nau blossom5-v2.05.src/PMinterface.cpp blossom5/PMinterface.cpp
+--- blossom5-v2.05.src/PMinterface.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/PMinterface.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -3,6 +3,7 @@
+ #include <string.h>
+ #include "PMimplementation.h"
+ 
++namespace BlossomV {
+ 
+ PerfectMatching::PerfectMatching(int nodeNum, int edgeNumMax)
+ 	: node_num(nodeNum),
+@@ -268,3 +269,6 @@
+ 
+ 	delete [] tmp_array;
+ }
++
++} // namespace BlossomV
++
+diff --color -Nau blossom5-v2.05.src/PMmain.cpp blossom5/PMmain.cpp
+--- blossom5-v2.05.src/PMmain.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/PMmain.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -3,6 +3,7 @@
+ #include <string.h>
+ #include "PMimplementation.h"
+ 
++namespace BlossomV {
+ 
+ void PerfectMatching::Finish()
+ {
+@@ -691,4 +692,5 @@
+ }
+ 
+ 
++} // namespace BlossomV
+ 
+diff --color -Nau blossom5-v2.05.src/PMrepair.cpp blossom5/PMrepair.cpp
+--- blossom5-v2.05.src/PMrepair.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/PMrepair.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -3,6 +3,7 @@
+ #include <string.h>
+ #include "PMimplementation.h"
+ 
++namespace BlossomV {
+ 
+ struct PerfectMatching::LCATreeX : LCATree
+ {
+@@ -429,3 +430,6 @@
+ 	ProcessNegativeEdge(a);
+ }
+ 
++
++} // namespace BlossomV
++
+diff --color -Nau blossom5-v2.05.src/PMshrink.cpp blossom5/PMshrink.cpp
+--- blossom5-v2.05.src/PMshrink.cpp	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/PMshrink.cpp	2022-08-31 17:01:57.311591169 +0200
+@@ -3,6 +3,7 @@
+ #include <string.h>
+ #include "PMimplementation.h"
+ 
++namespace BlossomV {
+ 
+ PerfectMatching::Node* PerfectMatching::FindBlossomRoot(Edge* a0)
+ {
+@@ -316,3 +317,6 @@
+ 	if (a_augment) Augment(a_augment);
+ }
+ 
++
++} // namespace BlossomV
++
+diff --color -Nau blossom5-v2.05.src/PQ.h blossom5/PQ.h
+--- blossom5-v2.05.src/PQ.h	2013-05-05 07:18:25.000000000 +0200
++++ blossom5/PQ.h	2022-08-31 17:01:57.311591169 +0200
+@@ -28,6 +28,9 @@
+ 
+ #include <string.h>
+ 
++namespace BlossomV {
++
++
+ template <typename REAL> class PriorityQueue
+ {
+ public:
+@@ -393,4 +396,6 @@
+ 	}
+ }
+ 
++} // namespace BlossomV
++
+ #endif
+diff --color -Nau blossom5-v2.05.src/timer.h blossom5/timer.h
+--- blossom5-v2.05.src/timer.h	2013-05-05 07:01:07.000000000 +0200
++++ blossom5/timer.h	2022-08-31 17:01:57.311591169 +0200
+@@ -22,13 +22,23 @@
+ 	#endif
+ #endif
+ 
++#ifdef PM_TIMER_MSVC
++	#include <windows.h>
++#endif
++#ifdef PM_TIMER_CLOCK_GETTIME
++	#include <time.h>
++#endif
++#ifdef PM_TIMER_GETRUSAGE
++	#include <sys/resource.h>
++#endif
++
++namespace BlossomV {
+ //////////////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////////////////////////////
+ 
+-#ifdef PM_TIMER_MSVC
+ 
+-	#include <windows.h>
++#ifdef PM_TIMER_MSVC
+ 
+ 	inline double get_time()
+ 	{
+@@ -37,6 +47,7 @@
+ 		QueryPerformanceFrequency(&frequency);
+ 		return (double)t.QuadPart/(double)frequency.QuadPart;
+ 	}
++}
+ 
+ #endif
+ 
+@@ -46,8 +57,6 @@
+ 
+ #ifdef PM_TIMER_CLOCK_GETTIME
+ 
+-	#include <time.h>
+-
+ 	inline double get_time()
+ 	{
+ 		struct timespec t;
+@@ -63,7 +72,6 @@
+ 
+ #ifdef PM_TIMER_GETRUSAGE
+ 
+-	#include <sys/resource.h>
+ 
+ 	inline double get_time()
+ 	{
+@@ -94,5 +102,7 @@
+ 
+ #endif
+ 
++} // namespace BlossomV
++
+ #endif
+ 
+--- blossom5-v2.05.src/MinCost/instances.inc	2013-05-05 00:36:21.000000000 +0200
++++ blossom5/MinCost/instances.inc2	2022-10-14 14:09:28.763724400 +0200
+@@ -7,6 +7,8 @@
+ 
+ template class MinCost<int,int>;
+ template class MinCost<int,double>;
++template class MinCost<int,int64_t>;
+ 
+ template class DualMinCost<int>;
+ template class DualMinCost<double>;
++template class DualMinCost<int64_t>;
