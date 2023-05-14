@@ -44,8 +44,9 @@ target_include_directories(Blossom5
 
 add_library(Blossom5::Blossom5 ALIAS Blossom5)
 
-if(${CMAKE_PROJECT_NAME} STREQUAL "${PROJECT_NAME}")
+# Disabled for now, needs to build with GEOM:
 
-    add_executable(blossom5 ${blossom5_SOURCE_DIR}/example.cpp)
-    target_link_libraries(blossom5 PRIVATE Blossom5::Blossom5)
-endif()
+#if(${CMAKE_PROJECT_NAME} STREQUAL "${PROJECT_NAME}")
+#    add_executable(blossom5 ${blossom5_SOURCE_DIR}/example.cpp)
+#    target_link_libraries(blossom5 PRIVATE Blossom5::Blossom5)
+#endif()
