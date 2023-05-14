@@ -90,11 +90,12 @@ diff --color -Nau blossom5-v2.05.src/misc.cpp blossom5/misc.cpp
 diff --color -Nau blossom5-v2.05.src/PerfectMatching.h blossom5/PerfectMatching.h
 --- blossom5-v2.05.src/PerfectMatching.h	2014-12-15 15:35:59.000000000 +0100
 +++ blossom5/PerfectMatching.h	2022-08-31 17:01:57.311591169 +0200
-@@ -31,6 +31,7 @@
+@@ -31,6 +31,8 @@
  #ifndef HALSKDJDFHALSJASFDFASJGLA
  #define HALSKDJDFHALSJASFDFASJGLA
  
 +#include <limits>
++#include <cstdint>
  #include <assert.h>
  #include <limits.h>
  #include "block.h"
